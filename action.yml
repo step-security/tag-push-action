@@ -1,0 +1,16 @@
+name: 'Tag-Push Action'
+description: 'Retag and push multiplatform docker images'
+author: 'step-security'
+inputs:
+  src:
+    required: true
+    description: 'Source tag'
+  dst:
+    required: true
+    description: 'Destination tags'
+  docker-config-path:
+    required: false
+    description: 'Docker config file path'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
