@@ -58,14 +58,14 @@ jobs:
     steps:
 
       - name: Login Dockerhub
-        uses: docker/login-action@v1
+        uses: step-security/docker-login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v5
         with:
           images: docker.io/step-security/node-disk-manager     
 
