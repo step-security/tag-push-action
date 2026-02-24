@@ -1,0 +1,55 @@
+name: Publish docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Tag to release'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        if: startsWith(github.event.inputs.release_tag, 'v')
+        steps:
+        - name: Harden the runner (Audit all outbound calls)
+          uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+          with:
+            egress-policy: audit
+
+        - name: Checkout
+          uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        - name: Validate tag format
+          run: |
+            TAG=${{ github.event.inputs.release_tag }}
+            if ! echo "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+              echo "❌ Invalid tag format: $TAG"
+              exit 1
+            fi
+            echo "✅ Valid semver tag: $TAG"
+        - name: Log in to GitHub Container Registry
+          uses: step-security/docker-login-action@c3e677aae8393bc9c81cfdf9709648720ea4bd4d # v3.6.0
+          with:
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Set up QEMU for ARM builds
+          uses: step-security/setup-qemu-action@8c4aef027ab2df56e08f597afe6dd8cd31cb84f5 # v3.7.0
+
+        - name: Set up Docker Buildx
+          uses: step-security/setup-buildx-action@c60a792b446ef83310733d5cd9d0c8d6870d043f # v3.12.0
+
+        - name: Build and push Docker image
+          uses: step-security/docker-build-push-action@a8c3d08b23f8be6aeed43eb1a14ce6fe51284438 # v6.18.0
+          with:
+            context: ./repo-copy
+            push: true
+            platforms: linux/amd64,linux/arm64
+            tags: |
+              ghcr.io/${{ github.repository }}/repo-copy:${{ github.event.inputs.release_tag }}
