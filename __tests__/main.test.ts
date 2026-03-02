@@ -1,9 +1,22 @@
 import axios from 'axios'
-import * as main from '../src/main'
 
 jest.mock('axios')
+jest.mock('@actions/exec')
+jest.mock('@actions/core', () => {
+  const actual = jest.requireActual('@actions/core')
+  return {
+    ...actual,
+    setFailed: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn()
+  }
+})
+
 const mockedAxios = axios as jest.Mocked<typeof axios>
 mockedAxios.get.mockResolvedValue({status: 200})
+
+// Import after mocks are set up so run() doesn't fail at import time
+import * as main from '../src/main'
 
 describe('getDestinationTags', () => {
   it('single image', async () => {
