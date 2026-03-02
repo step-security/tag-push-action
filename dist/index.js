@@ -86,7 +86,7 @@ function run() {
                 `${dockerConfigPath}:/root/.docker/config.json`,
                 '--network',
                 'host',
-                'akhilerm/repo-copy:latest',
+                'ghcr.io/step-security/tag-push-action/repo-copy:v2.2.0@sha256:d91abc5f55fc4124afabc7f6899fd4e3870d0e2d1747ef3763783c80f3eb6828',
                 source,
                 ...destination
             ]);
