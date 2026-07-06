@@ -52,7 +52,7 @@ async function validateSubscription(): Promise<void> {
   }
 }
 
-async function run(): Promise<void> {
+export async function run(): Promise<void> {
   try {
     await validateSubscription()
     const source: string = core.getInput('src')
@@ -113,5 +113,3 @@ export async function getDestinationTags(): Promise<string[]> {
 
   return res.filter(item => item).map(pat => pat.trim())
 }
-
-run()
