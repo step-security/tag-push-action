@@ -39,7 +39,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getDestinationTags = void 0;
+exports.getDestinationTags = exports.run = void 0;
 // eslint-disable-next-line import/no-unresolved
 const sync_1 = __nccwpck_require__(4393);
 const core = __importStar(__nccwpck_require__(2186));
@@ -118,6 +118,7 @@ function run() {
         }
     });
 }
+exports.run = run;
 // This function is a modified version from the script used in docker buildx actions
 // Ref https://github.com/docker/build-push-action/blob/master/src/context.ts#L163
 function getDestinationTags() {
@@ -143,7 +144,6 @@ function getDestinationTags() {
     });
 }
 exports.getDestinationTags = getDestinationTags;
-run();
 
 
 /***/ }),
