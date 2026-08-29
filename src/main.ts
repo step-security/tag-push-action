@@ -52,7 +52,7 @@ async function validateSubscription(): Promise<void> {
   }
 }
 
-async function run(): Promise<void> {
+export async function run(): Promise<void> {
   try {
     await validateSubscription()
     const source: string = core.getInput('src')
@@ -99,11 +99,11 @@ export async function getDestinationTags(): Promise<string[]> {
     return res
   }
 
-  for (const output of (await parse(items, {
+  for (const output of parse(items, {
     columns: false,
     relaxColumnCount: true,
     skipRecordsWithEmptyValues: true
-  })) as string[][]) {
+  })) {
     if (output.length === 1) {
       res.push(output[0])
     } else {
@@ -113,5 +113,3 @@ export async function getDestinationTags(): Promise<string[]> {
 
   return res.filter(item => item).map(pat => pat.trim())
 }
-
-run()

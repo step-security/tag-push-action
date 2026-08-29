@@ -1,0 +1,83 @@
+name: Tests
+
+on: ['push']
+
+permissions:
+  contents: read
+
+jobs:
+  tag-push:
+    name: Test Copy Operation
+    runs-on: ubuntu-latest
+    env:
+      REGISTRY_USER: testuser
+      REGISTRY_PASSWORD: testpassword
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Start authenticated registry
+        run: |
+          mkdir -p "$RUNNER_TEMP/auth"
+          docker run --rm --entrypoint htpasswd httpd:2 \
+            -Bbn "$REGISTRY_USER" "$REGISTRY_PASSWORD" > "$RUNNER_TEMP/auth/htpasswd"
+          docker run -d --restart=always \
+            --name registry \
+            -p 5001:5000 \
+            -v "$RUNNER_TEMP/auth:/auth" \
+            -e REGISTRY_AUTH=htpasswd \
+            -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+            -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
+            docker.io/distribution/distribution:3
+          # Wait until the registry answers (401 = up and asking for auth).
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:5001/v2/" || true)
+            [ "$code" != "000" ] && break
+            sleep 1
+          done
+
+      - name: Login to registry
+        run: |
+          echo "$REGISTRY_PASSWORD" | \
+            docker login localhost:5001 -u "$REGISTRY_USER" --password-stdin
+
+      - name: Copy image to the registry
+        uses: ./
+        with:
+          src: docker.io/library/busybox:latest
+          dst: |
+            localhost:5001/busybox:ci
+
+      - name: Verify pushed image
+        # The copied image must be byte-identical to the source, so their
+        # (content-addressed) image IDs have to match.
+        run: |
+          docker pull busybox:latest
+          docker pull localhost:5001/busybox:ci
+          SRC_ID=$(docker images -q busybox:latest)
+          DST_ID=$(docker images -q localhost:5001/busybox:ci)
+          echo "pushed image: ${DST_ID} (expected ${SRC_ID})"
+          test "$SRC_ID" = "$DST_ID"
+
+  test3:
+    name: Unit Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install
+        run: npm install
+
+      - name: Test
+        run: npm test
