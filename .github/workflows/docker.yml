@@ -40,7 +40,7 @@ jobs:
             password: ${{ secrets.GITHUB_TOKEN }}
 
         - name: Set up QEMU for ARM builds
-          uses: step-security/setup-qemu-action@8c4aef027ab2df56e08f597afe6dd8cd31cb84f5 # v3.7.0
+          uses: step-security/setup-qemu-action@1d653f731ddc90c553742100d15205c94b792314 # v4.2.0
 
         - name: Set up Docker Buildx
           uses: step-security/setup-buildx-action@c60a792b446ef83310733d5cd9d0c8d6870d043f # v3.12.0
