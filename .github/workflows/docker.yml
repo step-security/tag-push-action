@@ -33,7 +33,7 @@ jobs:
             fi
             echo "✅ Valid semver tag: $TAG"
         - name: Log in to GitHub Container Registry
-          uses: step-security/docker-login-action@c3e677aae8393bc9c81cfdf9709648720ea4bd4d # v3.6.0
+          uses: step-security/docker-login-action@bd6978fd4ef9a5f78130095b298b8a721afcb0d8 # v4.5.1
           with:
             registry: ghcr.io
             username: ${{ github.actor }}
